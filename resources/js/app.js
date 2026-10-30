@@ -184,6 +184,15 @@ function closeCampaignModal(){document.querySelector('#campaignModal').classList
 function exportCsv(){const headers=['Cabang','Campaign','Platform','Status','Budget','Impressions','Reach','Klik','Leads','Closing','Omzet','ROAS'];const rows=reportCampaigns.map(c=>[c.branch||'Belum ditetapkan',c.name,c.platform,c.status,c.budget,c.impressions,c.reach,c.clicks,c.leads,c.closing,c.revenue,c.budget?(c.revenue/c.budget).toFixed(2):0]);const csv=[headers,...rows].map(row=>row.map(value=>`"${String(typeof value==='string' && /^[=+@\-\t\r]/.test(value)?"'"+value:value).replaceAll('"','""')}"`).join(',')).join('\n');const blob=new Blob([`\ufeff${csv}`],{type:'text/csv;charset=utf-8'});const link=Object.assign(document.createElement('a'),{href:URL.createObjectURL(blob),download:'ads-manager-report.csv'});link.click();URL.revokeObjectURL(link.href);showToast('Laporan CSV berhasil diekspor.');}
 
 document.addEventListener('DOMContentLoaded',()=>{
+    const loginPassword=document.querySelector('#loginPassword'),loginPasswordToggle=document.querySelector('#loginPasswordToggle');
+    if(loginPassword && typeof loginPasswordToggle?.addEventListener==='function')loginPasswordToggle.addEventListener('click',()=>{
+        const visible=loginPassword.type==='password';
+        loginPassword.type=visible?'text':'password';
+        loginPasswordToggle.setAttribute('aria-pressed',String(visible));
+        loginPasswordToggle.setAttribute('aria-label',visible?'Sembunyikan kata sandi':'Tampilkan kata sandi');
+        loginPasswordToggle.querySelectorAll('svg').forEach((icon,index)=>icon.hidden=index===(visible?0:1));
+        loginPassword.focus();
+    });
     if(!window.ADS_DATA)return;
     renderAllCampaigns();renderOverview([]);renderLeads();renderUsers();loadDashboardFilters(false);
     document.querySelector('#workspaceBranch')?.addEventListener('change',event=>{const url=new URL(location.href);url.searchParams.set('branch',event.target.value);location.href=url.pathname+url.search;});

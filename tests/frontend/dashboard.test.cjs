@@ -8,7 +8,7 @@ function setup(data) {
     const events = {};
     const document = {
         querySelector(selector) {
-            if (!elements.has(selector)) elements.set(selector, { value: '', textContent: '', innerHTML: '', dataset: {}, classList: { add() {}, remove() {} } });
+            if (!elements.has(selector)) elements.set(selector, { value: '', type: '', textContent: '', innerHTML: '', dataset: {}, attributes: {}, listeners: {}, classList: { add() {}, remove() {} }, addEventListener(name, callback) { this.listeners[name] = callback; }, setAttribute(name, value) { this.attributes[name] = value; }, querySelectorAll() { return []; }, focus() { this.focused = true; } });
             return elements.get(selector);
         },
         addEventListener(name, callback) { events[name] = callback; },
@@ -21,6 +21,23 @@ function setup(data) {
 test('login page safely skips dashboard initialization', () => {
     const { events } = setup(undefined);
     assert.doesNotThrow(() => events.DOMContentLoaded());
+});
+
+test('login password visibility toggle updates its accessible state', () => {
+    const { events, elements } = setup(undefined);
+    events.DOMContentLoaded();
+    const input = elements.get('#loginPassword');
+    const toggle = elements.get('#loginPasswordToggle');
+    input.type = 'password';
+    assert.equal(input.type, 'password');
+    toggle.listeners.click();
+    assert.equal(input.type, 'text');
+    assert.equal(toggle.attributes['aria-pressed'], 'true');
+    assert.equal(toggle.attributes['aria-label'], 'Sembunyikan kata sandi');
+    toggle.listeners.click();
+    assert.equal(input.type, 'password');
+    assert.equal(toggle.attributes['aria-pressed'], 'false');
+    assert.equal(toggle.attributes['aria-label'], 'Tampilkan kata sandi');
 });
 
 test('empty workspace shows no sample campaign or revenue', () => {
