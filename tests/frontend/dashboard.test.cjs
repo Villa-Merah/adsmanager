@@ -42,3 +42,18 @@ test('metrics, daily chart and both funnels render actual filtered values', () =
     assert.match(document.querySelector('#fullFunnel').innerHTML, /700/);
     assert.doesNotMatch(document.querySelector('#campaignTableBody').innerHTML, /<script>/);
 });
+
+test('profile identity updates sidebar and avatar without reloading', () => {
+    const { context, document } = setup({ user: { id: 1, name: 'Before', email: 'old@example.com' }, users: [] });
+    const name = { textContent: '' }, email = { textContent: '' };
+    const avatar = { children: [], textContent: '', replaceChildren() { this.children = []; }, append(image) { this.children.push(image); } };
+    document.createElement = () => ({});
+    document.querySelectorAll = selector => ({ '[data-profile-name]': [name], '[data-profile-email]': [email], '[data-profile-avatar]': [avatar] }[selector] || []);
+    vm.runInContext("updateProfileIdentity({id:1,name:'Rina Putri',email:'rina@example.com',avatar_url:'/profile/avatar?v=1'});", context);
+    assert.equal(name.textContent, 'Rina Putri');
+    assert.equal(email.textContent, 'rina@example.com');
+    assert.equal(avatar.children[0].src, '/profile/avatar?v=1');
+    vm.runInContext("updateProfileIdentity({id:1,name:'Rina Putri',email:'rina@example.com',avatar_url:null});", context);
+    assert.equal(avatar.children.length, 0);
+    assert.equal(avatar.textContent, 'RP');
+});

@@ -9,7 +9,7 @@ class Campaign extends Model
 {
     protected $guarded = [];
 
-    protected $casts = ['date' => 'date', 'budget' => 'decimal:2', 'revenue' => 'decimal:2'];
+    protected $casts = ['date' => 'date:Y-m-d', 'budget' => 'decimal:2', 'revenue' => 'decimal:2'];
 
     protected $appends = ['ctr', 'cpl', 'roas'];
 

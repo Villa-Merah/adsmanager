@@ -17,6 +17,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/metrics', [DashboardController::class, 'metrics']);
     Route::put('/profile', [ProfileController::class, 'update']);
+    Route::get('/profile/avatar', [ProfileController::class, 'avatar'])->name('profile.avatar');
     Route::put('/profile/password', [ProfileController::class, 'password']);
     Route::middleware('role:admin,marketing')->group(function () {
         Route::resource('campaigns', CampaignController::class)->only(['store', 'update', 'destroy']);

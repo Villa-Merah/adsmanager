@@ -83,6 +83,67 @@ async function loadDashboardFilters(notify=true) {
     try { const data=await api(`/metrics?${params}`); if(requestId!==metricsRequest)return;const list=data.campaigns.map(normalizeCampaign);reportCampaigns=list;paintMetrics(data.metrics,list); if(notify===true)showToast(`Filter diterapkan · ${list.length} campaign.`); } catch(error){showToast(error.message);}
 }
 
+function profileInitials(name) {
+    return String(name || '').trim().split(/\s+/).filter(Boolean).map(part=>Array.from(part)[0]).slice(0,2).join('').toUpperCase() || '?';
+}
+
+function paintProfileAvatar(element, user, previewUrl) {
+    const url=previewUrl === undefined ? user.avatar_url : previewUrl;
+    element.replaceChildren();
+    if(url){const img=document.createElement('img');img.src=url;img.alt='Foto profil';element.append(img);}
+    else element.textContent=profileInitials(user.name);
+}
+
+function updateProfileIdentity(user) {
+    window.ADS_DATA.user=user;
+    users=users.map(member=>member.id===user.id?user:member);
+    document.querySelectorAll('[data-profile-name]').forEach(el=>el.textContent=user.name);
+    document.querySelectorAll('[data-profile-email]').forEach(el=>el.textContent=user.email);
+    document.querySelectorAll('[data-profile-avatar]').forEach(el=>paintProfileAvatar(el,user));
+    renderUsers();
+}
+
+function setupProfileSettings() {
+    const form=document.querySelector('#profileForm'), passwordForm=document.querySelector('#passwordForm');
+    if(!form || !passwordForm)return;
+    let previewUrl;
+    const clearPreview=()=>{if(previewUrl)URL.revokeObjectURL(previewUrl);previewUrl=undefined;};
+    const feedback=(id,message,error=false)=>{const el=document.querySelector(id);el.textContent=message;el.classList.toggle('is-error',error);};
+    const photo=document.querySelector('#profileAvatar');
+    const preview=()=>paintProfileAvatar(form.querySelector('[data-profile-avatar]'),window.ADS_DATA.user,form.elements.remove_avatar.value==='1'?null:previewUrl);
+    photo.addEventListener('change',()=>{
+        clearPreview();const file=photo.files[0];
+        if(file && (!['image/jpeg','image/png','image/webp'].includes(file.type)||file.size>2*1024*1024)){
+            photo.value='';feedback('#profileFeedback','Gunakan JPG, PNG, atau WebP dengan ukuran maksimal 2 MB.',true);preview();return;
+        }
+        form.elements.remove_avatar.value='0';
+        document.querySelector('#avatarFilename').textContent=file?.name||'';
+        if(file)previewUrl=URL.createObjectURL(file);
+        feedback('#profileFeedback','');preview();
+    });
+    document.querySelector('#removeAvatarButton').addEventListener('click',()=>{
+        clearPreview();photo.value='';form.elements.remove_avatar.value='1';document.querySelector('#avatarFilename').textContent='Foto akan dihapus setelah disimpan.';preview();
+    });
+    form.addEventListener('reset',()=>{
+        clearPreview();setTimeout(()=>{const user=window.ADS_DATA.user;form.elements.name.value=user.name;form.elements.email.value=user.email;form.elements.remove_avatar.value='0';document.querySelector('#avatarFilename').textContent='';feedback('#profileFeedback','');preview();},0);
+    });
+    form.addEventListener('submit',async event=>{
+        event.preventDefault();const button=form.querySelector('[type="submit"]');button.disabled=true;feedback('#profileFeedback','Menyimpan perubahan...');
+        try{
+            const body=new FormData(form);body.set('_method','PUT');if(!photo.files.length)body.delete('avatar');
+            const result=await api('/profile',{method:'POST',body});
+            clearPreview();updateProfileIdentity(result.user);photo.value='';form.elements.name.defaultValue=result.user.name;form.elements.email.defaultValue=result.user.email;form.elements.remove_avatar.value='0';document.querySelector('#avatarFilename').textContent='';feedback('#profileFeedback',result.message);
+        }catch(error){feedback('#profileFeedback',error.message,true);}finally{button.disabled=false;}
+    });
+    document.querySelector('#showProfilePasswords').addEventListener('change',event=>passwordForm.querySelectorAll('input[name]').forEach(input=>input.type=event.target.checked?'text':'password'));
+    passwordForm.addEventListener('submit',async event=>{
+        event.preventDefault();const button=passwordForm.querySelector('[type="submit"]');
+        if(passwordForm.elements.password.value!==passwordForm.elements.password_confirmation.value){feedback('#passwordFeedback','Konfirmasi kata sandi belum cocok.',true);return;}
+        button.disabled=true;feedback('#passwordFeedback','Memperbarui kata sandi...');
+        try{const result=await api('/profile/password',{method:'PUT',body:JSON.stringify(Object.fromEntries(new FormData(passwordForm)))});passwordForm.reset();passwordForm.querySelectorAll('input[name]').forEach(input=>input.type='password');feedback('#passwordFeedback',result.message);}catch(error){feedback('#passwordFeedback',error.message,true);}finally{button.disabled=false;}
+    });
+}
+
 function navigate(page) {
     document.querySelectorAll('.page').forEach(el=>el.classList.remove('active')); document.querySelectorAll('.nav-item[data-page]').forEach(el=>el.classList.toggle('active',el.dataset.page===page));
     document.querySelector(`#page-${page}`)?.classList.add('active'); const label=document.querySelector(`.nav-item[data-page="${page}"] span:nth-child(2)`); document.querySelector('#breadcrumbCurrent').textContent=label?.textContent||'Overview';
@@ -123,12 +184,11 @@ document.addEventListener('DOMContentLoaded',()=>{
     document.querySelector('#newLeadButton')?.addEventListener('click',()=>document.querySelector('#leadModal').classList.add('open'));document.querySelectorAll('[data-close-lead]').forEach(button=>button.addEventListener('click',()=>document.querySelector('#leadModal').classList.remove('open')));
     document.querySelector('#leadForm')?.addEventListener('submit',async event=>{event.preventDefault();try{const created=await api('/leads',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(event.target)))});leads.unshift({...created,campaign:campaigns.find(c=>String(c.id)===String(created.campaign_id))});renderLeads();await loadDashboardFilters(false);document.querySelector('#leadModal').classList.remove('open');event.target.reset();showToast('Lead berhasil ditambahkan.');}catch(error){showToast(error.message);}});
     const importFile=document.querySelector('#importFile');document.querySelector('#chooseFileButton')?.addEventListener('click',()=>importFile.click());importFile?.addEventListener('change',async()=>{if(!importFile.files[0])return;const form=new FormData();form.append('file',importFile.files[0]);const preview=document.querySelector('#importPreview');preview.innerHTML='<p>Memeriksa workbook...</p>';try{const data=await api('/imports/campaigns/preview',{method:'POST',body:form});preview.innerHTML=`<div class="preview-head"><div><b>${escapeHtml(importFile.files[0].name)}</b><span>${data.total} baris ditemukan</span></div><button class="primary-button" id="runImportButton">Impor ${data.total} baris</button></div><div class="table-wrap"><table><thead><tr>${data.headers.slice(0,8).map(h=>`<th>${escapeHtml(h)}</th>`).join('')}</tr></thead><tbody>${data.rows.map(r=>`<tr>${data.headers.slice(0,8).map(h=>`<td>${escapeHtml(r[h]??'—')}</td>`).join('')}</tr>`).join('')}</tbody></table></div>`;document.querySelector('#runImportButton').addEventListener('click',async()=>{try{const upload=new FormData();upload.append('file',importFile.files[0]);const result=await api('/imports/campaigns',{method:'POST',body:upload});showToast(`${result.rows_imported} baris berhasil diimpor.`);setTimeout(()=>location.reload(),800);}catch(error){showToast(error.message);}});}catch(error){preview.innerHTML=`<p class="form-error">${escapeHtml(error.message)}</p>`;}});
-    const openOrSyncMeta=async()=>{if(window.ADS_DATA?.metaConnection){try{const result=await api('/meta/sync',{method:'POST',body:JSON.stringify({since:document.querySelector('#dateFrom').value,until:document.querySelector('#dateTo').value})});showToast(`${result.imported} baris Meta Ads disinkronkan.`);setTimeout(()=>location.reload(),800);}catch(error){showToast(error.message);}return;}document.querySelector('#metaModal').classList.add('open');};
+    const openOrSyncMeta=async()=>{if(window.ADS_DATA?.metaConnection){try{const result=await api('/meta/sync',{method:'POST',body:JSON.stringify({since:document.querySelector('#dateFrom').value,until:document.querySelector('#dateTo').value})});showToast(result.imported ? `${result.imported} baris Meta Ads disinkronkan.` : "Meta tidak mengembalikan data pada periode ini. Pilih tanggal saat iklan berjalan, lalu sinkronkan ulang.");if(result.imported)setTimeout(()=>location.reload(),800);}catch(error){showToast(error.message);}return;}document.querySelector('#metaModal').classList.add('open');};
     document.querySelector('#connectButton')?.addEventListener('click',openOrSyncMeta);document.querySelector('#settingsConnectMeta')?.addEventListener('click',openOrSyncMeta);document.querySelectorAll('[data-close-meta]').forEach(button=>button.addEventListener('click',()=>document.querySelector('#metaModal').classList.remove('open')));
     document.querySelector('#metaForm')?.addEventListener('submit',async event=>{event.preventDefault();try{await api('/meta/connect',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(event.target)))});event.target.reset();showToast('Akun Meta Ads berhasil dihubungkan.');setTimeout(()=>location.reload(),800);}catch(error){showToast(error.message);}});
     document.querySelector('#disconnectMeta')?.addEventListener('click',async()=>{if(!confirm('Putuskan koneksi Meta Ads?'))return;try{await api('/meta/disconnect',{method:'DELETE'});showToast('Koneksi Meta Ads diputus.');setTimeout(()=>location.reload(),800);}catch(error){showToast(error.message);}});
-    document.querySelector('#profileForm')?.addEventListener('submit',async event=>{event.preventDefault();try{const result=await api('/profile',{method:'PUT',body:JSON.stringify(Object.fromEntries(new FormData(event.target)))});showToast(result.message);}catch(error){showToast(error.message);}});
-    document.querySelector('#passwordForm')?.addEventListener('submit',async event=>{event.preventDefault();try{const result=await api('/profile/password',{method:'PUT',body:JSON.stringify(Object.fromEntries(new FormData(event.target)))});event.target.reset();showToast(result.message);}catch(error){showToast(error.message);}});
+    setupProfileSettings();
     document.querySelector('#newUserButton')?.addEventListener('click',()=>document.querySelector('#userModal').classList.add('open'));document.querySelectorAll('[data-close-user]').forEach(button=>button.addEventListener('click',()=>document.querySelector('#userModal').classList.remove('open')));
     document.querySelector('#userForm')?.addEventListener('submit',async event=>{event.preventDefault();try{const user=await api('/users',{method:'POST',body:JSON.stringify(Object.fromEntries(new FormData(event.target)))});users.push(user);users.sort((a,b)=>a.name.localeCompare(b.name));renderUsers();event.target.reset();document.querySelector('#userModal').classList.remove('open');showToast('Anggota tim berhasil ditambahkan.');}catch(error){showToast(error.message);}});
     document.addEventListener('keydown',event=>{if(event.key==='Escape'){closeCampaignModal();document.querySelectorAll('.modal-backdrop').forEach(modal=>modal.classList.remove('open'));}if((event.ctrlKey||event.metaKey)&&event.key.toLowerCase()==='k'){event.preventDefault();document.querySelector('#globalSearch').focus();}});

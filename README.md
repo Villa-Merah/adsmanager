@@ -22,6 +22,12 @@ Periode mengikuti tanggal campaign (analisis cohort campaign), bukan tanggal tra
 
 Klik tanda centang pada baris lead untuk mencatat/memperbarui closing. Pemindahan lead ke campaign lain juga memindahkan atribusi closing. Menghapus lead menghapus closing terkait.
 
+## Pengaturan profil
+
+Semua peran dapat mengubah nama, email, foto profil, dan kata sandi melalui Pengaturan. Klik avatar di sidebar untuk membuka pengaturan. Perubahan identitas langsung tampil di sidebar; peran hanya dapat diubah admin melalui pengelolaan pengguna.
+
+Foto mendukung JPG, PNG, dan WebP, maksimal 2 MB dan dimensi 6000 x 6000 piksel. Foto disimpan pada disk local privat dan dilayani melalui route terautentikasi `/profile/avatar`; tidak memerlukan `storage:link`. Jalankan `php artisan migrate` setelah memperbarui project untuk menambahkan kolom avatar. Foto lama dihapus setelah penggantian berhasil.
+
 ## Impor XLSX
 
 Maksimum upload 10 MB. Sheet wajib bernama `Campaign Meta Ads`, dengan kolom `Tanggal`, `Campaign`, dan `Platform`. Kolom metrik mengikuti workbook contoh. File identik ditolak setelah pernah diimpor; baris dengan kunci tanggal/nama/platform yang sama diperbarui.

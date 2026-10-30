@@ -15,6 +15,20 @@ class RegressionTest extends TestCase
 {
     use RefreshDatabase;
 
+    public function test_campaign_date_does_not_shift_when_serialized_in_jakarta_timezone(): void
+    {
+        config(['app.timezone' => 'Asia/Jakarta']);
+        $previousTimezone = date_default_timezone_get();
+        date_default_timezone_set('Asia/Jakarta');
+        try {
+            $campaign = Campaign::create(['date' => '2026-08-01', 'name' => 'Date test', 'platform' => 'Meta Ads']);
+            $this->assertSame('2026-08-01', $campaign->fresh()->toArray()['date']);
+            $this->actingAs(User::factory()->create())->getJson('/metrics?platform=Meta%20Ads')->assertJsonPath('campaigns.0.date', '2026-08-01');
+        } finally {
+            date_default_timezone_set($previousTimezone);
+        }
+    }
+
     public function test_last_admin_cannot_be_demoted(): void
     {
         $admin = User::factory()->create();
