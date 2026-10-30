@@ -81,6 +81,29 @@ Test backend memakai SQLite in-memory sesuai phpunit.xml. Test Meta menggunakan 
 
 Gunakan APP_ENV=production, APP_DEBUG=false, APP_URL HTTPS, SESSION_SECURE_COOKIE=true, database dan kredensial server yang sesuai. Lindungi APP_KEY dan backup database. Jangan menjalankan seeder contoh pada produksi. Folder public adalah satu-satunya document root.
 
-OIDC/SSO belum tersedia: file kerangka terkait belum terhubung ke route. Aktivasi memerlukan provider, issuer, client ID, callback URL, dan kebijakan pemetaan akun; jangan menganggap login SSO atau nonaktif akun sudah diterapkan. Test contoh OIDC telah diganti dengan test autentikasi lokal yang benar.
+## Omni Central Auth
+
+Integrasi memakai OAuth 2 authorization code + PKCE melalui Laravel Passport di Omni Central Auth. Bukan alur `sso_data` terenkripsi atau OIDC ID token. Endpoint server: `/oauth/authorize`, `/oauth/token`, dan `/api/sso/user`.
+
+Lingkungan lokal yang dikonfigurasi:
+- Aplikasi: `http://iklan.test:8080`
+- SSO: `http://sso.oca.test:8080`
+- Callback terdaftar: `http://iklan.test:8080/auth/omni/callback`
+
+Di halaman login, klik **Masuk dengan Omni Central Auth**, login di server SSO, dan setujui akses. Login lokal tetap tersedia. Logout Ads Manager mengakhiri sesi lokal; sesi pusat tetap mengikuti kebijakan server SSO.
+
+Konfigurasi deployment ada di `.env.example`: `OMNI_ENABLED`, `OMNI_SERVER_URL`, `OMNI_CLIENT_ID`, `OMNI_CLIENT_SECRET`, `OMNI_REDIRECT_URI`. Client secret hanya berada di `.env` atau environment server dan tidak masuk Git. Daftarkan client OAuth tersendiri pada Omni untuk setiap lingkungan; callback harus sama persis. HTTPS wajib di luar lingkungan local/testing. Tidak memerlukan shared signing key Omni.
+
+Identitas ditautkan berdasarkan pasangan server URL dan ID pengguna SSO. Akun SSO baru mendapatkan role **staff tanpa cabang** dan tidak dapat melihat data operasional sampai superadmin menetapkan cabang. Klaim role/cabang dari server tidak mengubah izin lokal. Nama, email, password, role, dan cabang akun lokal yang sudah ditautkan tetap dikelola lokal.
+
+Email yang sama tidak otomatis menautkan akun lama. Administrator harus memastikan ID pengguna pada Omni, lalu menjalankan di Ads Manager:
+
+```sh
+php artisan app:link-omni-identity email-akun-lokal@example.com ID-PENGGUNA-OMNI
+```
+
+Command ini menolak tautan ganda dan tidak mengganti password atau hak akses. Jangan memakai ID akun iklan Meta sebagai ID Omni. Tabel identitas SSO yang sudah ada dipertahankan oleh migrasi; rollback migrasi integrasi ini juga mempertahankan tabel untuk melindungi tautan akun lama.
+
+State dan verifier disimpan sementara di session, berlaku lima menit, lalu dihapus saat callback. Token OAuth hanya dipakai di server untuk membaca profil dan tidak disimpan pada session/database. Pengujian callback memakai HTTP fake; login dan persetujuan akun nyata dilakukan oleh pengguna sendiri.
 
 Repository Git belum tersedia pada folder ini. Inisialisasi repository dan remote perlu dilakukan sesuai tujuan penyimpanan project.

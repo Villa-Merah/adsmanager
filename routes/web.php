@@ -6,10 +6,13 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LeadController;
 use App\Http\Controllers\MetaAdsController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SsoController;
 use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
+    Route::get('/auth/omni', [SsoController::class, 'login'])->middleware('throttle:10,1')->name('omni.login');
+    Route::get('/auth/omni/callback', [SsoController::class, 'callback'])->middleware('throttle:20,1')->name('omni.callback');
     Route::get('/login', [AuthController::class, 'show'])->name('login');
     Route::post('/login', [AuthController::class, 'login'])->middleware('throttle:20,1')->name('login.attempt');
 });
