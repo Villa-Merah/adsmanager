@@ -19,20 +19,20 @@ Route::middleware('auth')->group(function () {
     Route::put('/profile', [ProfileController::class, 'update']);
     Route::get('/profile/avatar', [ProfileController::class, 'avatar'])->name('profile.avatar');
     Route::put('/profile/password', [ProfileController::class, 'password']);
-    Route::middleware('role:admin,marketing')->group(function () {
+    Route::middleware('role:superadmin,kacab,marketing')->group(function () {
         Route::resource('campaigns', CampaignController::class)->only(['store', 'update', 'destroy']);
         Route::post('/imports/campaigns/preview', [CampaignController::class, 'preview'])->middleware('throttle:20,1');
         Route::post('/imports/campaigns', [CampaignController::class, 'import'])->middleware('throttle:10,1');
         Route::resource('leads', LeadController::class)->only(['store', 'update', 'destroy']);
         Route::post('/leads/{lead}/close', [LeadController::class, 'close']);
     });
-    Route::middleware('role:admin')->group(function () {
+    Route::middleware('role:superadmin')->group(function () {
         Route::resource('users', UserController::class)->only(['store', 'update', 'destroy']);
-        Route::middleware('throttle:10,1')->group(function () {
-            Route::post('/meta/connect', [MetaAdsController::class, 'connect']);
-            Route::post('/meta/sync', [MetaAdsController::class, 'sync']);
-            Route::delete('/meta/disconnect', [MetaAdsController::class, 'disconnect']);
-        });
+    });
+    Route::middleware(['role:kacab,marketing', 'throttle:10,1'])->group(function () {
+        Route::post('/meta/connect', [MetaAdsController::class, 'connect']);
+        Route::post('/meta/sync', [MetaAdsController::class, 'sync']);
+        Route::delete('/meta/disconnect', [MetaAdsController::class, 'disconnect']);
     });
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 });

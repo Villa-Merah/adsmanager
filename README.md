@@ -1,6 +1,6 @@
 # Ads Manager
 
-Aplikasi Laravel untuk laporan campaign, impor XLSX, sinkronisasi Meta Ads, dan CRM lead/closing. Peran pengguna: admin, marketing, viewer.
+Aplikasi Laravel untuk laporan campaign, impor XLSX, sinkronisasi Meta Ads, dan CRM lead/closing. Akses berdasarkan role dan cabang.
 
 ## Menjalankan lokal
 
@@ -22,9 +22,32 @@ Periode mengikuti tanggal campaign (analisis cohort campaign), bukan tanggal tra
 
 Klik tanda centang pada baris lead untuk mencatat/memperbarui closing. Pemindahan lead ke campaign lain juga memindahkan atribusi closing. Menghapus lead menghapus closing terkait.
 
+## Role, cabang, dan akses
+
+Role yang tersedia: superadmin, direktur utama, direktur, komisaris, kacab, keuangan, akademik, marketing, operasional, staff, pengajar.
+
+| Role | Laporan | Kelola campaign/lead/impor | Hubungkan/sinkronkan/putuskan Meta | Kelola pengguna |
+| --- | --- | --- | --- | --- |
+| superadmin | Semua cabang | Semua cabang | Tidak | Ya |
+| direktur utama, direktur, komisaris | Semua cabang, hanya baca | Tidak | Tidak | Tidak |
+| kacab, marketing | Cabang sendiri | Cabang sendiri | Cabang sendiri | Tidak |
+| keuangan, akademik, operasional, staff, pengajar | Cabang sendiri, hanya baca | Tidak | Tidak | Tidak |
+
+Cabang tersedia: Bandung, JakSel, dan JakPus. Role pusat tidak memerlukan cabang. Role cabang wajib ditetapkan ke satu cabang; pengguna lama tanpa cabang tidak dapat membaca data operasional sampai superadmin menetapkannya. Superadmin mengatur pengguna melalui Pengaturan > Anggota tim. Akun baru secara default menggunakan role staff; aplikasi tidak membuat kredensial bawaan.
+
+Pemilih cabang tersedia untuk role pusat. Campaign, lead, impor, dan CSV mengikuti cakupan cabang. Server membatasi akses melalui ID, parameter branch, maupun header X-Branch. Pemindahan pengguna cabang melepas penugasan lead sebelumnya.
+
+Kacab atau marketing menghubungkan satu akun iklan pada Pengaturan > Meta Ads cabangnya. Superadmin dan pimpinan tidak melihat tombol pengelolaan Meta dan ditolak oleh endpoint server jika mencoba langsung. Koneksi lama tanpa cabang dapat dihubungkan ulang oleh kacab/marketing dengan Ad Account ID dan token yang mereka masukkan sendiri. Tidak ada endpoint penetapan koneksi lintas cabang.
+
+Data lama yang belum memiliki cabang hanya terlihat oleh role pusat. Superadmin dapat menetapkan cabang melalui Edit campaign; lead terkait ikut berpindah. Lead tanpa campaign dapat ditetapkan melalui Edit lead. Data tidak dipindahkan otomatis.
+
+Scheduler server menjalankan koneksi cabang yang sudah dikonfigurasi, dan tetap mencoba cabang lain jika satu gagal. Ini pekerjaan otomatis server, bukan akses sinkronisasi melalui akun superadmin. Untuk cabang tertentu: `php artisan meta-ads:sync --branch=JakPus --since=2026-10-01 --until=2026-10-30`.
+
+Migrasi role mengubah admin lama menjadi superadmin dan viewer lama menjadi staff, serta mengubah role default database menjadi staff. Tidak mengubah password atau token.
+
 ## Pengaturan profil
 
-Semua peran dapat mengubah nama, email, foto profil, dan kata sandi melalui Pengaturan. Klik avatar di sidebar untuk membuka pengaturan. Perubahan identitas langsung tampil di sidebar; peran hanya dapat diubah admin melalui pengelolaan pengguna.
+Semua role dapat mengubah nama, email, foto profil, dan kata sandi melalui Pengaturan. Klik avatar di sidebar untuk membuka pengaturan. Perubahan identitas langsung tampil di sidebar; peran hanya dapat diubah admin melalui pengelolaan pengguna.
 
 Foto mendukung JPG, PNG, dan WebP, maksimal 2 MB dan dimensi 6000 x 6000 piksel. Foto disimpan pada disk local privat dan dilayani melalui route terautentikasi `/profile/avatar`; tidak memerlukan `storage:link`. Jalankan `php artisan migrate` setelah memperbarui project untuk menambahkan kolom avatar. Foto lama dihapus setelah penggantian berhasil.
 
@@ -36,7 +59,7 @@ Kesalahan file, XML, dan ekstensi zip dilaporkan sebagai respons 422. Catatan ha
 
 ## Meta Ads
 
-Admin memasukkan Ad Account ID dan access token melalui Pengaturan. Token disimpan terenkripsi dan tidak dikirim kembali dalam JSON. Sinkronisasi membaca seluruh halaman menggunakan cursor, lalu menyimpan hasil dalam transaksi. Kegagalan pada halaman berikutnya tidak menyimpan hasil parsial. `link_clicks` menggunakan action link_click, bukan seluruh klik.
+Kacab atau marketing memasukkan Ad Account ID dan access token melalui Pengaturan. Token disimpan terenkripsi dan tidak dikirim kembali dalam JSON. Sinkronisasi membaca seluruh halaman menggunakan cursor, lalu menyimpan hasil dalam transaksi. Kegagalan pada halaman berikutnya tidak menyimpan hasil parsial. `link_clicks` menggunakan action link_click, bukan seluruh klik.
 
 Sinkronisasi manual: `php artisan meta-ads:sync --since=2026-10-01 --until=2026-10-30`.
 Scheduler menjalankan sinkronisasi pukul 02:00 sesuai APP_TIMEZONE (default Asia/Jakarta). Di server, jalankan `php artisan schedule:run` tiap menit melalui scheduler OS.

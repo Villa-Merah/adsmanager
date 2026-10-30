@@ -4,7 +4,9 @@ namespace App\Http\Controllers;
 
 use App\Models\Campaign;
 use App\Services\CampaignWorkbookImporter;
+use App\Support\BranchAccess;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 
 class CampaignController extends Controller
@@ -13,19 +15,32 @@ class CampaignController extends Controller
     {
         $data = $this->validated($r);
         $data['source'] = 'manual';
+        $data['branch'] = BranchAccess::required($r);
 
         return response()->json(Campaign::create($data), 201);
     }
 
     public function update(Request $r, Campaign $campaign)
     {
-        $campaign->update($this->validated($r));
+        BranchAccess::authorize($r, $campaign);
+        $data = $this->validated($r);
+        if ($r->user()->hasRole('superadmin') && $r->filled('branch')) {
+            $data['branch'] = BranchAccess::required($r);
+        }
+        DB::transaction(function () use ($campaign, $data) {
+            $changed = isset($data['branch']) && $data['branch'] !== $campaign->branch;
+            $campaign->update($data);
+            if ($changed) {
+                $campaign->leads()->update(['branch' => $campaign->branch, 'assigned_to' => null]);
+            }
+        });
 
         return response()->json($campaign->fresh());
     }
 
-    public function destroy(Campaign $campaign)
+    public function destroy(Request $r, Campaign $campaign)
     {
+        BranchAccess::authorize($r, $campaign);
         $campaign->delete();
 
         return response()->noContent();
@@ -33,6 +48,7 @@ class CampaignController extends Controller
 
     public function preview(Request $r, CampaignWorkbookImporter $importer)
     {
+        BranchAccess::required($r);
         $r->validate(['file' => 'required|file|mimes:xlsx|max:10240']);
         try {
             return response()->json($importer->preview($r->file('file')));
@@ -43,9 +59,10 @@ class CampaignController extends Controller
 
     public function import(Request $r, CampaignWorkbookImporter $importer)
     {
+        BranchAccess::required($r);
         $r->validate(['file' => 'required|file|mimes:xlsx|max:10240']);
         try {
-            $result = $importer->import($r->file('file'), $r->user()?->id);
+            $result = $importer->import($r->file('file'), $r->user()?->id, BranchAccess::required($r));
 
             return response()->json($result);
         } catch (\RuntimeException $e) {

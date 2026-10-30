@@ -17,7 +17,7 @@
         <input name="remove_avatar" type="hidden" value="0">
         <label for="profileName">Nama lengkap<input id="profileName" name="name" value="{{ auth()->user()->name }}" autocomplete="name" maxlength="255" required></label>
         <label for="profileEmail">Email<input id="profileEmail" name="email" type="email" value="{{ auth()->user()->email }}" autocomplete="email" maxlength="255" required></label>
-        <p class="profile-role-note">Peran: <b>{{ ucfirst(auth()->user()->role) }}</b> · Peran dikelola oleh admin.</p>
+        <p class="profile-role-note">Peran: <b>{{ ucfirst(auth()->user()->role) }}</b> · Cabang: {{ auth()->user()->branch ?: (auth()->user()->canViewAllBranches() ? 'Semua cabang' : 'Belum ditetapkan') }}. Peran dan cabang dikelola admin pusat.</p>
         <p id="profileFeedback" class="form-feedback" role="status" aria-live="polite"></p>
         <div class="profile-form-actions"><button class="primary-button" type="submit">Simpan perubahan</button><button class="secondary-button" type="reset">Batal</button></div>
     </form>

@@ -57,3 +57,16 @@ test('profile identity updates sidebar and avatar without reloading', () => {
     assert.equal(avatar.children.length, 0);
     assert.equal(avatar.textContent, 'RP');
 });
+
+test('lead campaign choices follow the selected branch', () => {
+    const { context, document } = setup({ campaigns: [{id:1,name:'Bandung campaign',branch:'Bandung'}, {id:2,name:'JakPus campaign',branch:'JakPus'}] });
+    const select={value:'',innerHTML:''};
+    document.querySelector('#leadForm').elements={branch:{value:'Bandung'},campaign_id:select};
+    vm.runInContext('renderLeadCampaignOptions();',context);
+    assert.match(select.innerHTML,/Bandung campaign/);
+    assert.doesNotMatch(select.innerHTML,/JakPus campaign/);
+    document.querySelector('#leadForm').elements.branch.value='JakPus';
+    vm.runInContext('renderLeadCampaignOptions();',context);
+    assert.match(select.innerHTML,/JakPus campaign/);
+    assert.doesNotMatch(select.innerHTML,/Bandung campaign/);
+});

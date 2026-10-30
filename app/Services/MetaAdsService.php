@@ -12,6 +12,9 @@ class MetaAdsService
 {
     public function sync(MetaConnection $connection, string $since, string $until): int
     {
+        if (! $connection->branch) {
+            throw new RuntimeException('Tetapkan cabang akun Meta Ads sebelum sinkronisasi.');
+        }
         $token = $connection->access_token ?: config('services.meta_ads.access_token');
         if (! $token) {
             throw new RuntimeException('Access token Meta Ads belum dikonfigurasi.');
@@ -54,8 +57,8 @@ class MetaAdsService
             foreach ($rows as $row) {
                 $action = fn (string $type) => collect($row['actions'] ?? [])->firstWhere('action_type', $type)['value'] ?? 0;
                 $value = fn (string $type) => collect($row['action_values'] ?? [])->firstWhere('action_type', $type)['value'] ?? 0;
-                Campaign::updateOrCreate(['external_id' => $row['campaign_id'].'-'.$row['date_start']], [
-                    'date' => $row['date_start'], 'name' => $row['campaign_name'], 'objective' => $row['objective'] ?? 'Unknown', 'platform' => 'Meta Ads',
+                Campaign::updateOrCreate(['external_id' => $connection->branch.'-'.$row['campaign_id'].'-'.$row['date_start']], [
+                    'branch' => $connection->branch, 'date' => $row['date_start'], 'name' => $row['campaign_name'], 'objective' => $row['objective'] ?? 'Unknown', 'platform' => 'Meta Ads',
                     'budget' => $row['spend'] ?? 0, 'impressions' => $row['impressions'] ?? 0, 'reach' => $row['reach'] ?? 0, 'link_clicks' => $action('link_click'),
                     'leads_count' => $action('lead'), 'closings_count' => $action('purchase'), 'revenue' => $value('purchase'), 'status' => 'Aktif', 'source' => 'meta_ads',
                 ]);

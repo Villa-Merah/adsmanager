@@ -24,7 +24,7 @@ class CreateAdmin extends Command
 
             return self::FAILURE;
         }
-        User::create($data + ['role' => 'admin']);
+        User::create($data + ['role' => 'superadmin']);
         $this->info('Admin berhasil dibuat.');
 
         return self::SUCCESS;

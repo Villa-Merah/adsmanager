@@ -20,11 +20,11 @@ class ProfileSettingsTest extends TestCase
 
     public function test_viewer_can_update_own_identity_but_cannot_change_role(): void
     {
-        $viewer = User::factory()->create(['role' => 'viewer']);
+        $viewer = User::factory()->create(['role' => 'staff']);
         $this->actingAs($viewer)->get('/')->assertOk()->assertSee('Profil saya')->assertSee('Pilih foto');
-        $this->putJson('/profile', ['name' => 'Nama Saya', 'email' => 'new@example.com', 'role' => 'admin'])->assertOk()->assertJsonPath('user.name', 'Nama Saya');
+        $this->putJson('/profile', ['name' => 'Nama Saya', 'email' => 'new@example.com', 'role' => 'superadmin'])->assertOk()->assertJsonPath('user.name', 'Nama Saya');
         $viewer->refresh();
-        $this->assertSame('viewer', $viewer->role);
+        $this->assertSame('staff', $viewer->role);
         $this->assertSame('new@example.com', $viewer->email);
         $this->assertNull($viewer->email_verified_at);
     }

@@ -22,9 +22,9 @@ class CampaignWorkbookImporter
         return ['headers' => array_keys($rows[0] ?? []), 'rows' => array_slice($rows, 0, 8), 'total' => count($rows)];
     }
 
-    public function import(UploadedFile $file, ?int $userId): DataImport
+    public function import(UploadedFile $file, ?int $userId, string $branch): DataImport
     {
-        $hash = hash_file('sha256', $file->getRealPath());
+        $hash = hash('sha256', $branch.'|'.hash_file('sha256', $file->getRealPath()));
         if (DataImport::where('file_hash', $hash)->exists()) {
             throw new RuntimeException('File ini sudah pernah diimpor.');
         }
@@ -32,7 +32,7 @@ class CampaignWorkbookImporter
         $errors = [];
         $imported = 0;
         $skipped = 0;
-        DB::transaction(function () use ($rows, $file, $userId, $hash, &$errors, &$imported, &$skipped) {
+        DB::transaction(function () use ($rows, $file, $userId, $hash, $branch, &$errors, &$imported, &$skipped) {
             foreach ($rows as $index => $row) {
                 try {
                     $date = $this->dateValue($row['Tanggal'] ?? null);
@@ -43,9 +43,9 @@ class CampaignWorkbookImporter
 
                         continue;
                     }
-                    $sourceHash = hash('sha256', implode('|', [$date, $name, $platform]));
+                    $sourceHash = hash('sha256', implode('|', [$branch, $date, $name, $platform]));
                     Campaign::updateOrCreate(['source_hash' => $sourceHash], [
-                        'date' => $date, 'name' => $name, 'objective' => ($row['Objective'] ?? null) ?: 'Leads', 'platform' => $platform,
+                        'branch' => $branch, 'date' => $date, 'name' => $name, 'objective' => ($row['Objective'] ?? null) ?: 'Leads', 'platform' => $platform,
                         'budget' => $this->number($row['Budget'] ?? 0), 'impressions' => $this->number($row['Impression'] ?? 0),
                         'reach' => $this->number($row['Reach'] ?? 0), 'link_clicks' => $this->number($row['Klik Link'] ?? 0),
                         'profile_visits' => $this->number($row['Kunjungan Profil'] ?? 0), 'chats' => $this->number($row['Chat'] ?? 0),
@@ -59,7 +59,7 @@ class CampaignWorkbookImporter
                     $skipped++;
                 }
             }
-            DataImport::create(['user_id' => $userId, 'filename' => $file->getClientOriginalName(), 'file_hash' => $hash,
+            DataImport::create(['branch' => $branch, 'user_id' => $userId, 'filename' => $file->getClientOriginalName(), 'file_hash' => $hash,
                 'status' => empty($errors) ? 'completed' : 'completed_with_errors', 'rows_total' => count($rows),
                 'rows_imported' => $imported, 'rows_skipped' => $skipped, 'errors' => $errors ?: null]);
         });
@@ -139,7 +139,7 @@ class CampaignWorkbookImporter
                 }
             }
 
-return $rows;
+            return $rows;
         } finally {
             $zip->close();
         }
@@ -161,7 +161,7 @@ return $rows;
             } $out[] = implode('', $parts);
         }
 
-return $out;
+        return $out;
     }
 
     private function xml(ZipArchive $zip, string $name): SimpleXMLElement
@@ -171,7 +171,7 @@ return $out;
             throw new RuntimeException("Bagian XLSX $name tidak ditemukan.");
         }
 
-return $this->parseXml($text);
+        return $this->parseXml($text);
     }
 
     private function parseXml(string $text): SimpleXMLElement

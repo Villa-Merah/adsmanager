@@ -22,7 +22,7 @@ class DatabaseSeeder extends Seeder
         if (! app()->environment('local', 'testing')) {
             return;
         }
-        $admin = User::firstOrCreate(['email' => 'admin@adsmanager.id'], ['name' => 'Admin Marketing', 'password' => Str::password(24), 'role' => 'admin']);
+        $admin = User::firstOrCreate(['email' => 'admin@adsmanager.id'], ['name' => 'Admin Marketing', 'password' => Str::password(24), 'role' => 'superadmin']);
         $campaigns = [
             ['date' => '2026-08-01', 'name' => 'Kelas SR+AR', 'objective' => 'Leads', 'platform' => 'Instagram', 'budget' => 3000000, 'impressions' => 220000, 'reach' => 150000, 'link_clicks' => 4500, 'profile_visits' => 1200, 'chats' => 520, 'leads_count' => 210, 'closings_count' => 68, 'revenue' => 42500000, 'status' => 'Aktif', 'notes' => 'Contoh kampanye akuisisi utama', 'source' => 'excel'],
             ['date' => '2026-08-02', 'name' => 'Kelas AR', 'objective' => 'Leads', 'platform' => 'Facebook', 'budget' => 1500000, 'impressions' => 120000, 'reach' => 85000, 'link_clicks' => 2800, 'profile_visits' => 850, 'chats' => 340, 'leads_count' => 145, 'closings_count' => 49, 'revenue' => 30000000, 'status' => 'Selesai', 'notes' => 'Contoh kampanye trial class', 'source' => 'excel'],
