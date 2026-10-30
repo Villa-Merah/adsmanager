@@ -1,0 +1,85 @@
+<mxfile host="Electron" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) draw.io/29.6.6 Chrome/144.0.7559.236 Electron/40.8.4 Safari/537.36" version="29.6.6">
+  <diagram id="ads-manager-erd" name="Ads Manager ERD">
+    <mxGraphModel dx="3555" dy="1121" grid="0" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1654" pageHeight="1169" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" parent="1" style="text;html=1;align=left;verticalAlign=middle;whiteSpace=wrap;rounded=0;fontFamily=Helvetica;" value="&lt;b style=&quot;font-size:22px&quot;&gt;ADS MANAGER — ENTITY RELATIONSHIP DIAGRAM&lt;/b&gt;&lt;br&gt;&lt;span style=&quot;color:#667085&quot;&gt;Skema operasional Laravel / MySQL · 12 Agustus 2026&lt;/span&gt;" vertex="1">
+          <mxGeometry height="55" width="900" x="40" y="25" as="geometry" />
+        </mxCell>
+        <mxCell id="users" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#4f46e5;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#4f46e5;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;users&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.55&quot;&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;name : varchar(255)&lt;br&gt;email : varchar(255) &lt;b&gt;UQ&lt;/b&gt;&lt;br&gt;email_verified_at : timestamp?&lt;br&gt;password : varchar(255)&lt;br&gt;role : varchar(255) = admin&lt;br&gt;remember_token : varchar?&lt;br&gt;created_at : timestamp?&lt;br&gt;updated_at : timestamp?&lt;/div&gt;" vertex="1">
+          <mxGeometry height="265" width="260" x="60" y="120" as="geometry" />
+        </mxCell>
+        <mxCell id="campaigns" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#0f766e;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#0f766e;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;campaigns&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.45&quot;&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;external_id : varchar? &lt;b&gt;UQ&lt;/b&gt;&lt;br&gt;date : date&lt;br&gt;name : varchar(255)&lt;br&gt;objective : varchar = Leads&lt;br&gt;platform : varchar(255)&lt;br&gt;budget : decimal(18,2)&lt;br&gt;impressions : unsigned bigint&lt;br&gt;reach : unsigned bigint&lt;br&gt;link_clicks : unsigned bigint&lt;br&gt;profile_visits : unsigned bigint&lt;br&gt;chats : unsigned bigint&lt;br&gt;leads_count : unsigned int&lt;br&gt;closings_count : unsigned int&lt;br&gt;revenue : decimal(18,2)&lt;br&gt;status : varchar = Aktif&lt;br&gt;notes : text?&lt;br&gt;source : varchar = manual&lt;br&gt;source_hash : varchar? &lt;b&gt;UQ&lt;/b&gt;&lt;br&gt;created_at / updated_at&lt;/div&gt;" vertex="1">
+          <mxGeometry height="430" width="290" x="450" y="100" as="geometry" />
+        </mxCell>
+        <mxCell id="crm_leads" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#ea580c;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#ea580c;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;crm_leads&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.5&quot;&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; campaign_id : bigint?&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; assigned_to : bigint?&lt;br&gt;name : varchar(255)&lt;br&gt;phone : varchar(255)?&lt;br&gt;city : varchar(255)?&lt;br&gt;program : varchar(255)?&lt;br&gt;source : varchar(255)?&lt;br&gt;status : varchar = Baru&lt;br&gt;follow_up_at : timestamp?&lt;br&gt;notes : text?&lt;br&gt;created_at / updated_at&lt;/div&gt;" vertex="1">
+          <mxGeometry height="310" width="270" x="865" y="115" as="geometry" />
+        </mxCell>
+        <mxCell id="closings" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#16a34a;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#16a34a;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;closings&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.55&quot;&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; lead_id : bigint&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; campaign_id : bigint?&lt;br&gt;date : date&lt;br&gt;value : decimal(18,2)&lt;br&gt;status : varchar = Lunas&lt;br&gt;notes : text?&lt;br&gt;created_at / updated_at&lt;/div&gt;" vertex="1">
+          <mxGeometry height="235" width="260" x="1260" y="135" as="geometry" />
+        </mxCell>
+        <mxCell id="data_imports" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#2563eb;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#2563eb;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;data_imports&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.55&quot;&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; user_id : bigint?&lt;br&gt;filename : varchar(255)&lt;br&gt;file_hash : varchar(255) &lt;b&gt;UQ&lt;/b&gt;&lt;br&gt;status : varchar(255)&lt;br&gt;rows_total : unsigned int&lt;br&gt;rows_imported : unsigned int&lt;br&gt;rows_skipped : unsigned int&lt;br&gt;errors : json?&lt;br&gt;created_at / updated_at&lt;/div&gt;" vertex="1">
+          <mxGeometry height="270" width="260" x="60" y="505" as="geometry" />
+        </mxCell>
+        <mxCell id="sessions" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#64748b;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;sessions&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.55&quot;&gt;&lt;b&gt;PK&lt;/b&gt; id : varchar(255)&lt;br&gt;&lt;b&gt;FK&lt;/b&gt; user_id : bigint?&lt;br&gt;ip_address : varchar(45)?&lt;br&gt;user_agent : text?&lt;br&gt;payload : longtext&lt;br&gt;last_activity : int&lt;/div&gt;" vertex="1">
+          <mxGeometry height="190" width="260" x="-142" y="861" as="geometry" />
+        </mxCell>
+        <mxCell id="password_reset" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#64748b;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#64748b;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;password_reset_tokens&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.55&quot;&gt;&lt;b&gt;PK&lt;/b&gt; email : varchar(255)&lt;br&gt;token : varchar(255)&lt;br&gt;created_at : timestamp?&lt;/div&gt;" vertex="1">
+          <mxGeometry height="130" width="270" x="260" y="955" as="geometry" />
+        </mxCell>
+        <mxCell id="kpi_targets" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#7c3aed;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#7c3aed;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;kpi_targets&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.55&quot;&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;period_start : date&lt;br&gt;metric : varchar(255)&lt;br&gt;target : decimal(18,2)&lt;br&gt;unit : varchar(255)&lt;br&gt;created_at / updated_at&lt;br&gt;&lt;b&gt;UQ&lt;/b&gt; (period_start, metric)&lt;/div&gt;" vertex="1">
+          <mxGeometry height="210" width="270" x="530" y="620" as="geometry" />
+        </mxCell>
+        <mxCell id="meta_connections" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=0;fillColor=#ffffff;strokeColor=#0ea5e9;strokeWidth=2;fontSize=11;shadow=1;" value="&lt;div style=&quot;background:#0ea5e9;color:#fff;padding:10px 12px;font-size:15px;font-weight:bold&quot;&gt;meta_connections&lt;/div&gt;&lt;div style=&quot;padding:8px 12px;line-height:1.55&quot;&gt;&lt;b&gt;PK&lt;/b&gt; id : bigint&lt;br&gt;ad_account_id : varchar(255) &lt;b&gt;UQ&lt;/b&gt;&lt;br&gt;account_name : varchar(255)?&lt;br&gt;access_token : encrypted text?&lt;br&gt;status : varchar = disconnected&lt;br&gt;last_synced_at : timestamp?&lt;br&gt;last_error : text?&lt;br&gt;created_at / updated_at&lt;/div&gt;" vertex="1">
+          <mxGeometry height="240" width="290" x="900" y="565" as="geometry" />
+        </mxCell>
+        <mxCell id="legend" parent="1" style="rounded=1;whiteSpace=wrap;html=1;align=left;verticalAlign=top;spacing=12;fillColor=#f8fafc;strokeColor=#cbd5e1;dashed=1;fontSize=11;" value="&lt;b&gt;Notasi&lt;/b&gt;&lt;br&gt;PK = Primary Key · FK = Foreign Key · UQ = Unique&lt;br&gt;? = nullable · Garis bercabang = banyak record&lt;br&gt;&lt;br&gt;&lt;b&gt;Aturan penghapusan&lt;/b&gt;&lt;br&gt;campaign/user dihapus → FK pada lead/import/closing menjadi NULL&lt;br&gt;crm_lead dihapus → closing terkait ikut terhapus (CASCADE)" vertex="1">
+          <mxGeometry height="190" width="285" x="1260" y="515" as="geometry" />
+        </mxCell>
+        <mxCell id="legacy_note" parent="1" style="shape=note;whiteSpace=wrap;html=1;size=18;align=left;verticalAlign=top;spacing=12;fillColor=#fff7ed;strokeColor=#fb923c;fontSize=11;" value="&lt;b&gt;Catatan kompatibilitas&lt;/b&gt;&lt;br&gt;Database juga memiliki tabel &lt;b&gt;leads&lt;/b&gt; versi lama. Tabel tersebut dipertahankan, tetapi tidak digunakan oleh modul Ads Manager baru. Modul aktif memakai &lt;b&gt;crm_leads&lt;/b&gt;." vertex="1">
+          <mxGeometry height="145" width="300" x="1245" y="810" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_user_lead" edge="1" parent="1" source="users" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#64748b;fontSize=10;" target="crm_leads" value="assigns">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="190" y="68" />
+              <mxPoint x="1000" y="68" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_campaign_lead" edge="1" parent="1" source="campaigns" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#64748b;fontSize=10;" target="crm_leads" value="generates">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_lead_closing" edge="1" parent="1" source="crm_leads" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#64748b;fontSize=10;" target="closings" value="converts to">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_campaign_closing" edge="1" parent="1" source="campaigns" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#64748b;fontSize=10;" target="closings" value="attributes revenue">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="790" y="475" />
+              <mxPoint x="1390" y="475" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="rel_user_import" edge="1" parent="1" source="users" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#64748b;fontSize=10;" target="data_imports" value="uploads">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="rel_user_session" edge="1" parent="1" source="users" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;startArrow=ERone;startFill=0;endArrow=ERmany;endFill=0;strokeColor=#64748b;fontSize=10;" target="sessions" value="authenticates">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="-12" y="252" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="logical_reset" edge="1" parent="1" source="users" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;dashed=1;startArrow=none;endArrow=open;strokeColor=#94a3b8;fontSize=10;" target="password_reset" value="email (logical)">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="387" y="252" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
